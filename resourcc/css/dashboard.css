@@ -1,0 +1,252 @@
+/* ========== 출고 정산 대시보드 전용 (공통은 common.css) ========== */
+:root {
+  --col-date: 168px;
+  --col-name: 148px;
+}
+
+/* ---------- 드롭존 ---------- */
+.dropzone {
+  margin-bottom: 28px;
+  padding: 58px 20px;
+  border: 2px dashed #b9bec6;
+  border-radius: 6px;
+  background: var(--gray-soft);
+  text-align: center;
+  cursor: pointer;
+  transition: background .15s, border-color .15s;
+}
+
+.dropzone.is-over { border-color: var(--navy); background: #e3ecf7; }
+.dropzone.is-busy { opacity: .6; pointer-events: none; }
+
+.dropzone__title { margin: 0 0 10px; font-size: 15px; font-weight: 800; color: var(--navy-text); }
+.dropzone__sub { margin: 0; font-size: 12px; color: var(--muted); }
+
+/* ---------- 미매칭 패널 ---------- */
+.unmatched { margin-bottom: 24px; border-color: #f0c3c0; background: #fffaf9; }
+.unmatched__count { color: var(--crimson); font-weight: 800; }
+
+.um-row {
+  display: grid;
+  grid-template-columns: minmax(140px, 1.2fr) minmax(180px, 2fr) 80px minmax(200px, 1.6fr);
+  gap: 10px 16px;
+  align-items: center;
+  padding: 10px 0;
+  border-top: 1px solid #f0e0de;
+}
+
+.um-row--head { border-top: 0; font-size: 12px; font-weight: 800; color: var(--navy-text); }
+.um-row__file { font-size: 12px; color: var(--muted); overflow-wrap: anywhere; }
+.um-row__raw { font-weight: 700; overflow-wrap: anywhere; }
+/* 토큰 집합 다중 후보 힌트 */
+.um-row__cand { display: block; margin-top: 3px; font-size: 11px; font-weight: 600; color: var(--crimson); }
+.um-row__qty { text-align: center; }
+
+.select {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: #fff;
+  font-size: 13px;
+}
+
+/* ---------- 기간 검색 바 ---------- */
+.filterbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 22px;
+}
+
+.filterbar__left { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+.date-input {
+  width: 180px;
+  padding: 12px 16px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: var(--gray-soft);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--navy-text);
+  text-align: center;
+}
+
+.date-input:focus { outline: none; border-color: var(--navy); background: #fff; }
+
+.tilde { color: var(--muted); }
+
+.btn-search { padding: 12px 20px; background: var(--navy); color: #fff; font-size: 14px; }
+.btn-search:hover { background: var(--navy-dark); }
+
+.chips { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-left: 6px; }
+
+.chip {
+  position: relative;
+  padding: 11px 16px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: #fff;
+  color: var(--navy-text);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.chip:hover { border-color: var(--navy); }
+.chip.is-active { background: var(--navy); border-color: var(--navy); color: #fff; }
+
+/* 월 선택기는 칩 위에 투명하게 겹침 */
+.chip--month { display: inline-flex; align-items: center; }
+.chip--month input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.btn-excel { padding: 12px 22px; background: var(--green); color: #fff; font-size: 14px; }
+.btn-excel:hover { background: var(--green-dark); }
+
+/* ---------- 결과 헤더 ---------- */
+.result-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.result-range { font-size: 15px; font-weight: 800; color: var(--navy-text); }
+.result-count { font-size: 13px; color: var(--muted); }
+.result-count strong { color: var(--navy-text); }
+
+/* ---------- 정산 테이블 ---------- */
+.table-wrap { overflow: auto; max-height: 68vh; border: 1px solid var(--line); }
+
+.grid { border-collapse: separate; border-spacing: 0; width: max-content; min-width: 100%; font-size: 13px; }
+
+.grid th, .grid td {
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  padding: 11px 10px;
+  text-align: center;
+  white-space: nowrap;
+  background: #fff;
+}
+
+/* 헤더 행 상단 고정 (top 값은 JS가 측정해 주입) */
+.grid thead th, .grid thead td { position: sticky; z-index: 2; }
+
+.grid .h-depth1 { background: var(--gray-header); color: var(--navy-text); font-weight: 800; font-size: 14px; }
+.grid .h-depth2 { background: #f2f3f5; color: var(--navy-text); font-weight: 700; }
+.grid .h-sum { background: #f8f9fa; }
+.grid .h-detail { background: #f2f3f5; color: var(--navy-text); font-weight: 800; }
+
+/* 좌측 라벨/고정 컬럼 */
+.grid .lbl {
+  left: 0;
+  z-index: 5;
+  min-width: calc(var(--col-date) + var(--col-name));
+  background: #f2f3f5;
+  color: var(--navy-text);
+  font-weight: 800;
+}
+
+.grid .h-depth1.lbl { background: var(--gray-header); }
+
+.grid .c-date { left: 0; min-width: var(--col-date); }
+.grid .c-name { left: var(--col-date); min-width: var(--col-name); }
+
+.grid tbody .c-date, .grid tbody .c-name {
+  position: sticky;
+  z-index: 1;
+  background: #fff;
+  font-weight: 500;
+}
+
+.grid thead .c-date, .grid thead .c-name { z-index: 5; background: #f2f3f5; }
+
+.grid tbody tr:hover td { background: #f6f9fd; }
+
+.sum-select {
+  border: 0;
+  background: transparent;
+  color: var(--navy-text);
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.sum-select:focus { outline: none; }
+
+.grid .num { text-align: center; }
+.grid .money { font-variant-numeric: tabular-nums; }
+
+.table-empty { padding: 40px 0; text-align: center; color: var(--muted); font-size: 14px; }
+
+/* ---------- 상세 행 삭제 × (평소 숨김, 행 hover·포커스 시 노출) ---------- */
+.grid tbody .c-date { padding-left: 26px; }   /* × 아이콘 자리 확보 */
+
+.order-del {
+  position: absolute;
+  left: 6px; top: 50%;
+  transform: translateY(-50%);
+  width: 18px; height: 18px;
+  display: flex; align-items: center; justify-content: center;
+  padding: 0; border: 0; border-radius: 50%;
+  background: transparent;
+  color: var(--muted);           /* 평소 은은한 회색 */
+  font-size: 16px; line-height: 1; cursor: pointer;
+  opacity: 0; visibility: hidden;
+  transition: opacity .12s, color .12s, background .12s;
+}
+
+.grid tbody tr:hover .order-del,
+.order-del:focus-visible { opacity: 1; visibility: visible; }
+
+/* 아이콘 hover·포커스 시 위험 레드 */
+.order-del:hover,
+.order-del:focus-visible { color: var(--crimson); background: rgba(165, 16, 26, .1); outline: none; }
+
+/* ---------- 삭제 확인 모달 ---------- */
+.modal[hidden] { display: none; }
+.modal {
+  position: fixed; inset: 0; z-index: 80;
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+}
+.modal__backdrop { position: absolute; inset: 0; background: rgba(20, 30, 45, .5); }
+
+.modal__dialog {
+  position: relative;
+  width: 100%; max-width: 420px;
+  background: #fff; border-radius: 8px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, .28);
+  padding: 26px 26px 22px;
+}
+
+.modal__title { margin: 0 0 14px; font-size: 18px; font-weight: 800; color: var(--navy-text); }
+.modal__target {
+  margin: 0 0 12px; padding: 12px 14px;
+  background: #f6f7f9; border-radius: 6px;
+  font-size: 14px; font-weight: 700; color: var(--text);
+}
+.modal__desc { margin: 0 0 22px; font-size: 13px; color: var(--muted); line-height: 1.5; }
+
+.modal__actions { display: flex; justify-content: flex-end; gap: 10px; }
+.modal__cancel { padding: 10px 20px; background: var(--gray-soft); color: var(--text); font-size: 13px; }
+.modal__cancel:hover { background: #dfe3e8; }
+.modal__delete { padding: 10px 20px; background: var(--crimson); color: #fff; font-size: 13px; }
+.modal__delete:hover { background: var(--crimson-dark); }
+.table-empty a { color: var(--navy-text); font-weight: 700; }
+
+@media (max-width: 1100px) {
+  .filterbar__left { width: 100%; }
+  .date-input { width: 140px; }
+}

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>출고 보고서 | 출고정산시스템</title>
+  <!-- 기본 폰트: Noto Sans KR (400/500/700) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap">
+  <link rel="stylesheet" href="resourcc/css/common.css">
+  <link rel="stylesheet" href="resourcc/css/report.css">
+</head>
+<body class="page-report">
+  <div class="layout">
+    <aside class="sidebar">
+      <nav class="nav">
+        <a class="nav-item" href="index.html" data-page="category">카테고리 및 단가 설정</a>
+        <a class="nav-item" href="dashboard.html" data-page="dashboard">출고 정산 대시보드</a>
+        <a class="nav-item is-active" href="report.html" data-page="report">출고 보고서</a>
+        <a class="nav-item" href="statement.html" data-page="statement">거래처 정산서</a>
+      </nav>
+    </aside>
+
+    <main class="main">
+      <header class="page-head">
+        <h1 class="page-title">출고 보고서<span class="mock-flag" id="mockFlag" hidden>Mock 데이터</span></h1>
+        <div class="head-actions">
+          <button type="button" class="btn btn-backup" id="dataExportBtn"><span class="btn-backup__ic">↓</span> 데이터 내보내기</button>
+          <button type="button" class="btn btn-backup" id="dataImportBtn"><span class="btn-backup__ic">↑</span> 데이터 가져오기</button>
+          <div class="admin-chip">
+            <span class="admin-chip__badge">관리자</span>
+            <span class="admin-chip__name">Admin 최고관리자</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- 브랜드 탭: JS 렌더 -->
+      <div class="brand-tabs" id="brandTabs"></div>
+
+      <!-- 전역 컨트롤 -->
+      <div class="control-bar">
+        <div class="control">
+          <span class="control__label">기준 월</span>
+          <input type="month" class="month-input" id="monthInput">
+        </div>
+        <div class="control">
+          <span class="control__label">지표</span>
+          <div class="seg" id="metricSeg">
+            <button type="button" class="seg__btn is-active" data-metric="qty">수량 기준(권)</button>
+            <button type="button" class="seg__btn" data-metric="amount">금액 기준(원)</button>
+          </div>
+        </div>
+        <div class="control">
+          <span class="control__label">증감 기준</span>
+          <div class="seg" id="deltaSeg">
+            <button type="button" class="seg__btn is-active" data-delta="mom">전월 대비</button>
+            <button type="button" class="seg__btn" data-delta="yoy">전년 동기</button>
+          </div>
+        </div>
+        <button type="button" class="btn btn-pdf" id="pdfBtn">PDF 출력</button>
+      </div>
+
+      <!-- 인쇄 전용 머리말 -->
+      <div class="print-head" id="printHead"></div>
+
+      <!-- KPI -->
+      <div class="kpi-row" id="kpiRow"></div>
+
+      <div class="report-grid">
+        <!-- 좌측: 상품 트리 필터 -->
+        <aside class="card filter-card">
+          <div class="card-head">
+            <h2 class="card-title">상품 필터</h2>
+            <button type="button" class="link-btn" id="filterToggleAll">전체 해제</button>
+          </div>
+          <div class="tree" id="filterTree"></div>
+        </aside>
+
+        <div class="report-main">
+          <!-- Chart A -->
+          <section class="card chart-card">
+            <div class="card-head">
+              <h2 class="card-title">1·2depth 점유율 및 추이</h2>
+              <div class="seg seg--sm" id="chartAView">
+                <button type="button" class="seg__btn is-active" data-view="donut">이중 도넛</button>
+                <button type="button" class="seg__btn" data-view="stack">누적 막대</button>
+              </div>
+            </div>
+            <div class="chart-body">
+              <div class="chart-canvas"><canvas id="chartA"></canvas></div>
+              <!-- 인쇄 전용 도넛 스냅샷 이미지 (캔버스 리사이즈 타이밍 문제 회피) -->
+              <img class="chart-print-img" id="chartAPrintImg" alt="">
+              <div class="legend" id="chartALegend"></div>
+              <!-- 인쇄 전용 HTML 범례 (캔버스 크기와 무관 → 라벨 잘림 없음) -->
+              <ul class="legend-print" id="chartAPrintLegend"></ul>
+            </div>
+          </section>
+
+          <!-- Chart B -->
+          <section class="card chart-card">
+            <div class="card-head">
+              <h2 class="card-title">연도별 월간 추이 비교</h2>
+              <div class="head-tools">
+                <div class="seg seg--sm" id="chartBView">
+                  <button type="button" class="seg__btn is-active" data-bview="total">전체</button>
+                  <button type="button" class="seg__btn" data-bview="line">라인별</button>
+                </div>
+                <div class="dropdown" id="yearDropdown">
+                  <button type="button" class="dropdown__btn" id="yearBtn">연도 선택 ▾</button>
+                  <div class="dropdown__panel" id="yearPanel" hidden></div>
+                </div>
+              </div>
+            </div>
+            <div class="chart-body chart-body--line">
+              <div class="chart-canvas"><canvas id="chartB"></canvas></div>
+              <!-- 인쇄 전용 라인/누적막대 스냅샷 이미지 -->
+              <img class="chart-print-img" id="chartBPrintImg" alt="">
+            </div>
+          </section>
+        </div>
+      </div>
+
+      <!-- 상품별 금액 집계 (지표 토글 영향 없음) -->
+      <section class="card">
+        <div class="card-head">
+          <h2 class="card-title">상품별 금액 집계 <span class="card-sub" id="amtSub"></span></h2>
+        </div>
+        <div class="amt" id="amtTable"></div>
+      </section>
+
+      <!-- 아코디언 테이블 -->
+      <section class="card">
+        <div class="card-head">
+          <h2 class="card-title">상품별 전월 대비 집계 <span class="card-sub" id="tableSub"></span></h2>
+        </div>
+        <div class="acc" id="accTable"></div>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="resourcc/js/settlement-core.js"></script>
+  <script src="resourcc/js/report.js"></script>
+</body>
+</html>
