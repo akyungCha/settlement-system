@@ -542,5 +542,7 @@
     applySettings(Store.load() || seed());
   }
 
-  init();
+  // 첫 방문 시 시드 로드 후 렌더. S 없으면(코어 미로드) 바로 init.
+  if (S && S.Store.ensureSeed) S.Store.ensureSeed().then(init);
+  else init();
 })();

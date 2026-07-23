@@ -602,5 +602,6 @@
     render();
   }
 
-  init();
+  // 첫 방문 시 시드 로드 후 렌더(어느 페이지로 진입해도 동작). 실패해도 조용히 진행.
+  S.Store.ensureSeed().then(init);
 })();

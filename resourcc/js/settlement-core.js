@@ -47,6 +47,31 @@ window.Settlement = (function () {
     saveStatements: function (data) {
       localStorage.setItem(STMT_KEY, JSON.stringify(data));
       return true;
+    },
+
+    // 첫 방문(빈 저장소)에만 seed-data.json을 로드해 3개 도메인 저장. Promise<boolean> 반환.
+    // 경로는 문서 기준 상대 해석 → localhost·GitHub Pages 서브경로·타 호스트 모두 동작.
+    ensureSeed: function () {
+      if (localStorage.getItem(CAT_KEY) || localStorage.getItem(ORDER_KEY) || localStorage.getItem(STMT_KEY)) {
+        return Promise.resolve(false);   // 이미 데이터 있음 → 스킵
+      }
+      var url = new URL('seed-data.json', window.location.href).href;
+      return fetch(url).then(function (res) {
+        if (!res.ok) { console.warn('[seed] 로드 실패 HTTP ' + res.status + ' — ' + url); return null; }
+        return res.json();
+      }).then(function (env) {
+        if (!env) return false;
+        var err = backupValidate(env);   // 봉투/버전/필수 키 검증 재사용
+        if (err) { console.warn('[seed] 검증 거부: ' + err + ' — ' + url); return false; }
+        var d = env.data;
+        Store.saveCategories(d.settings);
+        Store.saveOrders(d.orders);
+        Store.saveStatements(d.statements);
+        return true;
+      }).catch(function (e) {
+        console.warn('[seed] 로드 예외: ' + (e && e.message ? e.message : e) + ' — ' + url);
+        return false;
+      });
     }
   };
 

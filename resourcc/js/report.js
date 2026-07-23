@@ -1077,5 +1077,7 @@
     backupImp.addEventListener('click', function () { S.Backup.importData({ toast: toast, onImported: function () { init(); } }); });
   }
 
-  init();
+  // 첫 방문 시 시드 로드 후 렌더(report.html 직행에도 동작). 실패해도 조용히 진행.
+  if (S && S.Store.ensureSeed) S.Store.ensureSeed().then(init);
+  else init();
 })();
